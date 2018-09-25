@@ -15,7 +15,7 @@ The Web API will allow users to submit their request using their wallet address.
 URL: http://localhost:8000/requestValidation
 
 Request parameters:
-    Wallet Address
+* Wallet Address
 
 Sample request:
 ```
@@ -39,8 +39,8 @@ After receiving the response, users will prove their blockchain identity by sign
 URL: http://localhost:8000/message-signature/validate
 
 Request parameters:
-     Wallet Address
-    Message Signature
+* Wallet Address
+* Message Signature
 
 Sample request:
 ```
@@ -69,13 +69,13 @@ Accept user requests and register a star.
 URL: http://localhost:8000/block
 
 Request parameters:
-    Wallet address
-    star object with following properties
-        right_ascension (ra)
-        declination (de)
-        magnitude (mag) [optional]
-        constellation (con) [optional]
-        story [Hex encoded Ascii string limited to 250 words/500 bytes]
+* Wallet address
+* star object with following properties
+* right_ascension (ra)
+* declination (de)
+* magnitude (mag) [optional]
+* constellation (con) [optional]
+* story [Hex encoded Ascii string limited to 250 words/500 bytes]
 
 Sample request:
 ```
@@ -114,7 +114,9 @@ endpoint that responds to a request using a URL path with a block height paramet
 URL: http://localhost:8000/block/[HEIGHT]
 
 Sample request:
+```
     http://localhost:8000/block/1
+```
 
 Sample response:
 ```
@@ -140,7 +142,9 @@ Endpoint that responds to a request using a URL path with a star hash
 URL: http://localhost:8000/stars/hash:[HASH]
 
 Sample request:
+```
     http://localhost:8000/stars/hash:a59e9e399bc17c2db32a7a87379a8012f2c8e08dd661d7c0a6a4845d4f3ffb9f
+```
 
 Sample response:
 ```
@@ -166,7 +170,9 @@ Endpoint that responds to a request using a URL path with a wallet address
 URL: http://localhost:8000/stars/address:[ADDRESS]
 
 Sample request:
+```
     http://localhost:8000/stars/address:142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ
+```
 
 Sample response:
 ```
@@ -207,12 +213,14 @@ Sample response:
 ## Running the code
 
 Install all the required js packages:
-
+```
     npm install
+```
 
 Run the code
-
+```
     node index.js
+```
 
 
 ## Running the tests
@@ -268,30 +276,36 @@ Retrieve a list of starts by wallet address
 ## Extra test cases
 
 Send an invalid signature
-
+```
     Use the POST section above
+```
 
 Register a star without validation
-
+```
     Use the POST section above
+```
 
 Send any of the first 3 post request outside of the 300sec period
-
+```
     Use the POST section above
+```
 
 Retrieve a star by an invalid height
-
+```
     curl -i -H "Accept: application/json" "http://127.0.0.1:8000/block/1000000"
 
     curl -i -H "Accept: application/json" "http://127.0.0.1:8000/block/test"
+```
 
 Retrieve a star by an invalid hash
-
+```
     curl "http://localhost:8000/stars/hash:a59e9e399bc17c2db32a7a87379a8012f2c8e08dd661d7c0a6a4845d4f3ffb9n"
+```
 
 Retrieve a list of starts by a random wallet address
-
+```
     curl "http://localhost:8000/stars/address:142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3LpZ"
+```
 
 ## Acknowledgments
 
