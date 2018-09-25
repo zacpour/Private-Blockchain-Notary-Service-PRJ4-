@@ -18,17 +18,21 @@ Request parameters:
     Wallet Address
 
 Sample request:
-    {
+```
+{
     "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ"
 }
+```
 
 Sample response:
-    {
+```
+{
     "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ",
     "requestTimeStamp": "1532296090",
     "message": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ:1532296090:starRegistry",
     "validationWindow": 300
 }
+```
 
 #### Validate User Message Signature
 After receiving the response, users will prove their blockchain identity by signing the received message from the previous endpoint with their wallet. Once they sign this message, the application will validate their request and grant access to register a star.
@@ -39,12 +43,15 @@ Request parameters:
     Message Signature
 
 Sample request:
+```
     {
         "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ",
         "signature": "H6ZrGrF0Y4rMGBMRT2+hHWGbThTIyhBS0dNKQRov9Yg6GgXcHxtO9GJN4nwD2yNXpnXHTWU9i+qdw5vpsooryLU="
     }
+```
 
 Sample response:
+```
     {
         "registerStar": true,
         "status": {
@@ -55,6 +62,7 @@ Sample response:
             "messageSignature": "valid"
         }
     }
+```
 
 #### Register a Star
 Accept user requests and register a star.
@@ -70,6 +78,7 @@ Request parameters:
         story [Hex encoded Ascii string limited to 250 words/500 bytes]
 
 Sample request:
+```
     {
         "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ",
         "star": {
@@ -78,8 +87,10 @@ Sample request:
             "story": "Found star using https://www.google.com/sky/"
         }
     }
+```
 
 Sample response:
+```
     {
         "hash": "a59e9e399bc17c2db32a7a87379a8012f2c8e08dd661d7c0a6a4845d4f3ffb9f",
         "height": 1,
@@ -94,6 +105,7 @@ Sample response:
         "time": "1532296234",
         "previousBlockHash": "49cce61ec3e6ae664514d5fa5722d86069cf981318fc303750ce66032d0acff3"
     }
+```
 
 ### GET
 
@@ -105,6 +117,7 @@ Sample request:
     http://localhost:8000/block/1
 
 Sample response:
+```
     {
         "hash": "a59e9e399bc17c2db32a7a87379a8012f2c8e08dd661d7c0a6a4845d4f3ffb9f",
         "height": 1,
@@ -120,6 +133,7 @@ Sample response:
         "time": "1532296234",
         "previousBlockHash": "49cce61ec3e6ae664514d5fa5722d86069cf981318fc303750ce66032d0acff3"
     }
+```
 
 #### Get Star By Hash
 Endpoint that responds to a request using a URL path with a star hash
@@ -129,6 +143,7 @@ Sample request:
     http://localhost:8000/stars/hash:a59e9e399bc17c2db32a7a87379a8012f2c8e08dd661d7c0a6a4845d4f3ffb9f
 
 Sample response:
+```
     {
         "hash": "a59e9e399bc17c2db32a7a87379a8012f2c8e08dd661d7c0a6a4845d4f3ffb9f",
         "height": 1,
@@ -144,6 +159,7 @@ Sample response:
         "time": "1532296234",
         "previousBlockHash": "49cce61ec3e6ae664514d5fa5722d86069cf981318fc303750ce66032d0acff3"
     }
+```
 
 #### Get an Array of Stars by Wallet Address
 Endpoint that responds to a request using a URL path with a wallet address
@@ -153,6 +169,7 @@ Sample request:
     http://localhost:8000/stars/address:142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ
 
 Sample response:
+```
     [
         {
             "hash": "a59e9e399bc17c2db32a7a87379a8012f2c8e08dd661d7c0a6a4845d4f3ffb9f",
@@ -185,6 +202,7 @@ Sample response:
             "previousBlockHash": "a59e9e399bc17c2db32a7a87379a8012f2c8e08dd661d7c0a6a4845d4f3ffb9f"
         }
     ]
+```
 
 ## Running the code
 
@@ -200,21 +218,26 @@ Run the code
 ## Running the tests
 
 Request a message
+```
     curl -X "POST" "http://localhost:8000/requestValidation" \
         -H 'Content-Type: application/json; charset=utf-8' \
         -d $'{
     "address": "REPLACE_WITH_YOUR_WALLET_ADDRESS"
     }'
+```
 
 Verify your signature
+```
     curl -X "POST" "http://localhost:8000/message-signature/validate" \
         -H 'Content-Type: application/json; charset=utf-8' \
         -d $'{
     "address": "REPLACE_WITH_YOUR_WALLET_ADDRESS",
     "signature": "REPLACE_WITH_YOUR_SIGNATURE"
     }'
+```
 
 Register a star
+```
     curl -X "POST" "http://localhost:8000/block" \
         -H 'Content-Type: application/json; charset=utf-8' \
         -d $'{
@@ -225,37 +248,49 @@ Register a star
         "story": "Found star using https://www.google.com/sky/"
     }
     }'
+```
 
 Retrieve a star by height
+```
     curl -i -H "Accept: application/json" "http://127.0.0.1:8000/block/0"
+```
 
 Retrieve a star by hash
+```
     curl "http://localhost:8000/stars/hash:REPLACE_WITH_A_START_HASH"
+```
 
 Retrieve a list of starts by wallet address
+```
     curl "http://localhost:8000/stars/address:REPLACE_WITH_YOUR_WALLET_ADDRESS"
-
+```
 
 ## Extra test cases
 
 Send an invalid signature
+
     Use the POST section above
 
 Register a star without validation
+
     Use the POST section above
 
 Send any of the first 3 post request outside of the 300sec period
+
     Use the POST section above
 
 Retrieve a star by an invalid height
+
     curl -i -H "Accept: application/json" "http://127.0.0.1:8000/block/1000000"
 
     curl -i -H "Accept: application/json" "http://127.0.0.1:8000/block/test"
 
 Retrieve a star by an invalid hash
+
     curl "http://localhost:8000/stars/hash:a59e9e399bc17c2db32a7a87379a8012f2c8e08dd661d7c0a6a4845d4f3ffb9n"
 
 Retrieve a list of starts by a random wallet address
+
     curl "http://localhost:8000/stars/address:142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3LpZ"
 
 ## Acknowledgments
