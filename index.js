@@ -19,14 +19,13 @@ const asyncMiddleware = fn =>
 
 //Mempool
 var mempool = {}
-const validationWindow = 300
+const validationWindow = 10
 
 // Returns the amount of time remaining for the request to be valid
 function timeRemaining(messageTimeStamp){
     const currentTimeStamp = new Date().getTime().toString().slice(0,-3)
     return validationWindow - (currentTimeStamp - messageTimeStamp)
 }
-
 
 app.use(express.json());
 // Post endpoint to send a request
@@ -55,10 +54,11 @@ app.post('/requestValidation', asyncMiddleware(async (req, res, next) => {
 app.post('/message-signature/validate', asyncMiddleware(async (req, res, next) => {
     const address = req.body.address
     const signature = req.body.signature
-    const message = address + ":" + mempool[address]['requestTimeStamp'] + "starRegistry"
 
     // Check if address exists in the mempool and within validation window
     if(address in mempool && timeRemaining(mempool[address]['requestTimeStamp']) > 0){
+        const message = address + ":" + mempool[address]['requestTimeStamp'] + "starRegistry"
+
         // Validate signature and store in mempool
         const signValid = bitcoinMessage.verify(message, address, signature)
         mempool[address] = {
@@ -87,18 +87,14 @@ app.post('/message-signature/validate', asyncMiddleware(async (req, res, next) =
 app.post('/block', asyncMiddleware(async (req, res, next) => {
 
     let dataInvalid = true;
-    console.log(req.body)
     // Check for required parameters in the posted data
     if('address' in req.body && 'star' in req.body && 'dec' in req.body['star'] && 'ra' in req.body['star'] && 'story' in req.body['star']){
         const address = req.body['address']
-        console.log('1')
         // Check for validity of the request
         if(address in mempool && timeRemaining(mempool[address]['requestTimeStamp']) > 0 && mempool[address]['valid']){
             // Convert story to Hex encoded Ascii string limited to 250 words/500 bytes
-            console.log('2')
             const story = Buffer.from(req.body['star']['story']).toString('hex')
             if(Buffer.byteLength(story) <= 500){
-                console.log('3')
                 let star = {}
                 star["dec"] = req.body['star']['dec']
                 star["ra"] = req.body['star']['ra']
@@ -117,10 +113,12 @@ app.post('/block', asyncMiddleware(async (req, res, next) => {
 
                 // Check for invalid & empty blocks
                 if(content === undefined || content === null || content === ""){
-                    console.log('4')
                     dataInvalid = true
                 }
                 else{
+                    // Invalidate the entry in the mempool
+                    delete mempool[address]
+
                     // Create the new block
                     let newBlock = new simpleChain.Block(content)
                     let newBlockHeight  = await blockchain.addBlock(newBlock)
@@ -136,9 +134,9 @@ app.post('/block', asyncMiddleware(async (req, res, next) => {
             }
         }
     }
-    console.log('6')
+
     if(dataInvalid)
-        res.send("Invalid Payload");
+        res.send("Invalid Request");
 }));
 
 
