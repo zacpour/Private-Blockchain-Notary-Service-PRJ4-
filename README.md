@@ -18,24 +18,24 @@ Request parameters:
     Wallet Address
 
 Sample request:
-    {
-        "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ"
-    }
+     {
+    "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ"
+}
 
 Sample response:
-    {
-        "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ",
-        "requestTimeStamp": "1532296090",
-        "message": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ:1532296090:starRegistry",
-        "validationWindow": 300
-    }
+     {
+    "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ",
+    "requestTimeStamp": "1532296090",
+    "message": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ:1532296090:starRegistry",
+    "validationWindow": 300
+}
 
 #### Validate User Message Signature
 After receiving the response, users will prove their blockchain identity by signing the received message from the previous endpoint with their wallet. Once they sign this message, the application will validate their request and grant access to register a star.
 URL: http://localhost:8000/message-signature/validate
 
 Request parameters:
-    Wallet Address
+     Wallet Address
     Message Signature
 
 Sample request:
