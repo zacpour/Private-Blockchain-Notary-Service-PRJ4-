@@ -95,6 +95,20 @@ class Blockchain{
     return JSON.parse(block);
   }
 
+  // Get block by hash
+  async getBlockByHash(hash){
+    let block = await storage.getLevelDBDataByHash(hash);
+    console.log(JSON.parse(block));
+    return JSON.parse(block);
+  }
+
+  // GEt blocks by address
+  async getBlocksByAddress(address){
+    let blocks = await storage.getLevelDBDataByAddress(address);
+    //console.log(JSON.parse(blocks));
+    return blocks;
+  }
+
   // Validate block
   async validateBlock(blockHeight){
     try{

@@ -144,8 +144,8 @@ app.post('/block', asyncMiddleware(async (req, res, next) => {
 
 // Get endpoint to retrieve the stars/blocks by height
 app.get('/block/:blockHeight([0-9]+)', asyncMiddleware(async (req, res, next) => {
-    blockHeight =req.params.blockHeight
-    blockchainHeight = await blockchain.getBlockHeight()
+    const blockHeight =req.params.blockHeight
+    const blockchainHeight = await blockchain.getBlockHeight()
 
     // Check of out of bound blocks
     if(blockHeight > blockchainHeight)
@@ -156,17 +156,35 @@ app.get('/block/:blockHeight([0-9]+)', asyncMiddleware(async (req, res, next) =>
         res.json(block);
     }
 }));
-/*
+
 // Get endpoint to retrieve the stars/blocks by wallet address
-app.get('/stars/address:address([0-9]+)', asyncMiddleware(async (req, res, next) => {
-    req.send('Under construction...')
+app.get('/stars/address:address', asyncMiddleware(async (req, res, next) => {
+    const address = req.params.address.slice(1)
+
+    // TODO: Check the address has a valid format
+
+    // Retreive the block
+    const blocks = await blockchain.getBlocksByAddress(address)
+    if(blocks === undefined)
+        res.send("Invalid Block")
+    else
+        res.json(blocks);
 }));
 
 // Get endpoint to retrieve the stars/blocks by block hash
-app.get('/stars/hash:hash([0-9]+)', asyncMiddleware(async (req, res, next) => {
-    req.send('Under construction...')
+app.get('/stars/hash:hash', asyncMiddleware(async (req, res, next) => {
+    const hash = req.params.hash.slice(1)
+    // TODO: Check the hash has a valid format
+
+    // Retreive the block
+    const block = await blockchain.getBlockByHash(hash)
+    if(block === undefined)
+        res.send("Invalid Block")
+    else
+        res.json(block);
+
 }));
-*/
+
 app.listen(8000, function(){
     console.log('Example app listening on port 8000!')
 })

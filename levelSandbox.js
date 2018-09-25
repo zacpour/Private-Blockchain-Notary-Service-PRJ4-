@@ -31,6 +31,45 @@ return new Promise(function(resolve, reject) {
 });
 }
 
+// Get data from levelDB with hash
+function getLevelDBDataByHash(hash){
+    return new Promise(function(resolve, reject) {
+        db.createReadStream()
+            .on('data', function(data) {
+                value = data["value"]
+                jsonValue = JSON.parse(value)
+                if(jsonValue["hash"] == hash)
+                    resolve(value)
+            })
+            .on('error', function() {
+                reject("Could not retrieve chain length");
+            })
+            .on('close', function() {
+                reject("Block does not exist");
+            });
+    });
+}
+
+// Get list of objects from levelDB with Address
+function getLevelDBDataByAddress(address){
+    return new Promise(function(resolve, reject) {
+        let blocks = []
+        db.createReadStream()
+            .on('data', function(data) {
+                value = data["value"]
+                jsonValue = JSON.parse(value)
+                if(jsonValue["body"]["address"] == address)
+                    blocks.push(jsonValue)
+            })
+            .on('error', function() {
+                reject("Could not retrieve chain length");
+            })
+            .on('close', function() {
+                resolve(blocks)
+            });
+    });
+}
+
 // Add data to levelDB with value
 function addDataToLevelDB(value) {
     let i = 0;
@@ -60,7 +99,7 @@ function getDBLength(){
     });
 }
 
-module.exports = { addLevelDBData, getLevelDBData, addDataToLevelDB, getDBLength };
+module.exports = { addLevelDBData, getLevelDBData, getLevelDBDataByHash, getLevelDBDataByAddress, addDataToLevelDB, getDBLength };
 
 /* ===== Testing ==============================================================|
 |  - Self-invoking function to add blocks to chain                             |
