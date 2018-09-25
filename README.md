@@ -212,6 +212,11 @@ Sample response:
 
 ## Running the code
 
+Note: Skip this instruction but if you had any issues installing bitcoinjs-lib use the following script:
+```
+    the npm i --ignore-scripts bitcoinjs-lib
+```
+
 Install all the required js packages:
 ```
     npm install
@@ -221,7 +226,6 @@ Run the code
 ```
     node index.js
 ```
-
 
 ## Running the tests
 
