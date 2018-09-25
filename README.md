@@ -18,12 +18,12 @@ Request parameters:
     Wallet Address
 
 Sample request:
-     {
+    {
     "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ"
 }
 
 Sample response:
-     {
+    {
     "address": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ",
     "requestTimeStamp": "1532296090",
     "message": "142BDCeSGbXjWKaAnYXbMpZ6sbrSAo3DpZ:1532296090:starRegistry",
