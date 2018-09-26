@@ -212,14 +212,15 @@ Sample response:
 
 ## Running the code
 
-Note: Skip this instruction but if you had any issues installing bitcoinjs-lib use the following script:
-```
-    the npm i --ignore-scripts bitcoinjs-lib
-```
-
 Install all the required js packages:
 ```
     npm install
+```
+
+Installing message verification packages:
+```
+    npm i --ignore-scripts bitcoinjs-lib
+    npm i bitcoinjs-message
 ```
 
 Run the code
@@ -316,3 +317,5 @@ Retrieve a list of starts by a random wallet address
 * Using Async Await in Express with Node 9
 (https://medium.com/@Abazhenov/using-async-await-in-express-with-node-8-b8af872c0016)
 
+* JavaScript: Convert Hexadecimal to ASCII format
+(https://www.w3resource.com/javascript-exercises/javascript-string-exercise-28.php)

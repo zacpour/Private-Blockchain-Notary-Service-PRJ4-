@@ -19,7 +19,7 @@ const asyncMiddleware = fn =>
 
 //Mempool
 var mempool = {}
-const validationWindow = 10
+const validationWindow = 300
 
 // Returns the amount of time remaining for the request to be valid
 function timeRemaining(messageTimeStamp){
@@ -27,27 +27,55 @@ function timeRemaining(messageTimeStamp){
     return validationWindow - (currentTimeStamp - messageTimeStamp)
 }
 
+// Retruns if true if str contains only ASCII, false otherwise
+function isASCII(str) {
+    return /^[\x00-\x7F]*$/.test(str);
+}
+
+// Returns the ascii equivalent of provided hex
+function hex_to_ascii(hexStr)
+ {
+	var hex  = hexStr.toString();
+	var str = '';
+	for (var n = 0; n < hex.length; n += 2) {
+		str += String.fromCharCode(parseInt(hex.substr(n, 2), 16));
+	}
+	return str;
+ }
+
 app.use(express.json());
 // Post endpoint to send a request
 app.post('/requestValidation', asyncMiddleware(async (req, res, next) => {
-    const address = req.body.address
-    const ts = new Date().getTime().toString().slice(0,-3)
-    const message = address + ":" + ts + "starRegistry"
+    if(req.body.hasOwnProperty('address') && req.body.address != ""){
+        const address = req.body.address
+        const ts = new Date().getTime().toString().slice(0,-3)
 
-    // Store request's info in the mempool
-    mempool[address] = {
-        "requestTimeStamp" : ts,
-        "valid" : false
+        // Update requestTimeStamp if there a new request or old request is expired
+        if(!(address in mempool) || timeRemaining(mempool[address]['requestTimeStamp']) <= 0){
+            // Store request's info in the mempool with updated timestamp
+            mempool[address] = {
+                "requestTimeStamp" : ts,
+                "valid" : false
+            }
+        }
+
+        // Prepare and return the response
+        const message = address + ":" + mempool[address]['requestTimeStamp'] + ":" + "starRegistry"
+        const resMsg = {
+            "address": address,
+            "requestTimeStamp": ts,
+            "message": message,
+            "validationWindow": timeRemaining(mempool[address]['requestTimeStamp'])
+        }
+        res.json(resMsg)
+    }
+    else{
+        const resMsg = {
+            "status": "Invalid Request"
+        }
+        res.json(resMsg)
     }
 
-    // Prepare and return the response
-    const resMeg = {
-        "address": address,
-        "requestTimeStamp": ts,
-        "message": message,
-        "validationWindow": validationWindow
-    }
-    res.json(resMeg)
 }));
 
 // Post endpoint to validate a request
@@ -57,7 +85,7 @@ app.post('/message-signature/validate', asyncMiddleware(async (req, res, next) =
 
     // Check if address exists in the mempool and within validation window
     if(address in mempool && timeRemaining(mempool[address]['requestTimeStamp']) > 0){
-        const message = address + ":" + mempool[address]['requestTimeStamp'] + "starRegistry"
+        const message = address + ":" + mempool[address]['requestTimeStamp'] + ":" + "starRegistry"
 
         // Validate signature and store in mempool
         const signValid = bitcoinMessage.verify(message, address, signature)
@@ -67,7 +95,7 @@ app.post('/message-signature/validate', asyncMiddleware(async (req, res, next) =
         }
 
         // Prepare and return the response
-        const resMeg = {
+        const resMsg = {
             "registerStar": true,
             "status": {
               "address": address,
@@ -77,10 +105,16 @@ app.post('/message-signature/validate', asyncMiddleware(async (req, res, next) =
               "messageSignature": signValid
             }
         }
-        res.json(resMeg)
+        res.json(resMsg)
     }
-    else
-        res.send('Invalid Request')
+    else{
+        resMsg = {
+            "registerStar": false,
+            "status" : "Invalid Request"
+        }
+        res.json(resMsg)
+    }
+
 }));
 
 // Post endpoint to register a start and create a new block
@@ -93,12 +127,12 @@ app.post('/block', asyncMiddleware(async (req, res, next) => {
         // Check for validity of the request
         if(address in mempool && timeRemaining(mempool[address]['requestTimeStamp']) > 0 && mempool[address]['valid']){
             // Convert story to Hex encoded Ascii string limited to 250 words/500 bytes
-            const story = Buffer.from(req.body['star']['story']).toString('hex')
-            if(Buffer.byteLength(story) <= 500){
+            const story = req.body['star']['story']
+            if(Buffer.byteLength(story) <= 500 && isASCII(story)){
                 let star = {}
                 star["dec"] = req.body['star']['dec']
                 star["ra"] = req.body['star']['ra']
-                star["story"] = story
+                star["story"] = Buffer.from(story).toString('hex')
                 if("mag" in req.body['star'])
                     star["mag"] = req.body['star']['mag']
                 if("con" in req.body.star)
@@ -135,10 +169,13 @@ app.post('/block', asyncMiddleware(async (req, res, next) => {
         }
     }
 
-    if(dataInvalid)
-        res.send("Invalid Request");
+    if(dataInvalid){
+        resMsg = {
+            "status" : "Invalid Request"
+        }
+        res.json(resMsg)
+    }
 }));
-
 
 // Get endpoint to retrieve the stars/blocks by height
 app.get('/block/:blockHeight([0-9]+)', asyncMiddleware(async (req, res, next) => {
@@ -146,11 +183,19 @@ app.get('/block/:blockHeight([0-9]+)', asyncMiddleware(async (req, res, next) =>
     const blockchainHeight = await blockchain.getBlockHeight()
 
     // Check of out of bound blocks
-    if(blockHeight > blockchainHeight)
-        res.send("Invalid Block");
+    if(blockHeight > blockchainHeight){
+        resMsg = {
+            "status" : "Invalid Block"
+        }
+        res.json(resMsg)
+    }
     else{
         // Retreive the block
-        const block = await blockchain.getBlock(req.params.blockHeight)
+        let block = await blockchain.getBlock(req.params.blockHeight)
+
+        // Add decoded story
+        block["body"]["star"]["storyDecoded"] = hex_to_ascii(block["body"]["star"]["story"])
+
         res.json(block);
     }
 }));
@@ -163,10 +208,19 @@ app.get('/stars/address:address', asyncMiddleware(async (req, res, next) => {
 
     // Retreive the block
     const blocks = await blockchain.getBlocksByAddress(address)
-    if(blocks === undefined)
-        res.send("Invalid Block")
-    else
+    if(blocks === undefined){
+        resMsg = {
+            "status" : "Invalid Block"
+        }
+        res.json(resMsg)
+    }
+    else{
+        // Add decoded story
+        for(let i=0; i<blocks.length; i++)
+            blocks[i]["body"]["star"]["storyDecoded"] = hex_to_ascii(blocks[i]["body"]["star"]["story"])
+
         res.json(blocks);
+    }
 }));
 
 // Get endpoint to retrieve the stars/blocks by block hash
@@ -176,11 +230,18 @@ app.get('/stars/hash:hash', asyncMiddleware(async (req, res, next) => {
 
     // Retreive the block
     const block = await blockchain.getBlockByHash(hash)
-    if(block === undefined)
-        res.send("Invalid Block")
-    else
-        res.json(block);
+    if(block === undefined){
+        resMsg = {
+            "status" : "Invalid Block"
+        }
+        res.json(resMsg)
+    }
+    else{
+        // Add decoded story
+        block["body"]["star"]["storyDecoded"] = hex_to_ascii(block["body"]["star"]["story"])
 
+        res.json(block);
+    }
 }));
 
 app.listen(8000, function(){
