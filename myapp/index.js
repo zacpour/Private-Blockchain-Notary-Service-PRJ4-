@@ -63,7 +63,7 @@ app.post('/requestValidation', asyncMiddleware(async (req, res, next) => {
         const message = address + ":" + mempool[address]['requestTimeStamp'] + ":" + "starRegistry"
         const resMsg = {
             "address": address,
-            "requestTimeStamp": ts,
+            "requestTimeStamp": mempool[address]['requestTimeStamp'],
             "message": message,
             "validationWindow": timeRemaining(mempool[address]['requestTimeStamp'])
         }
@@ -194,7 +194,10 @@ app.get('/block/:blockHeight([0-9]+)', asyncMiddleware(async (req, res, next) =>
         let block = await blockchain.getBlock(req.params.blockHeight)
 
         // Add decoded story
-        block["body"]["star"]["storyDecoded"] = hex_to_ascii(block["body"]["star"]["story"])
+        console.log(typeof block)
+        console.log(block)
+        if(typeof block["body"] != "string")
+            block["body"]["star"]["storyDecoded"] = hex_to_ascii(block["body"]["star"]["story"])
 
         res.json(block);
     }
@@ -217,7 +220,7 @@ app.get('/stars/address:address', asyncMiddleware(async (req, res, next) => {
     else{
         // Add decoded story
         for(let i=0; i<blocks.length; i++)
-            blocks[i]["body"]["star"]["storyDecoded"] = hex_to_ascii(blocks[i]["body"]["star"]["story"])
+                blocks[i]["body"]["star"]["storyDecoded"] = hex_to_ascii(blocks[i]["body"]["star"]["story"])
 
         res.json(blocks);
     }
@@ -238,7 +241,8 @@ app.get('/stars/hash:hash', asyncMiddleware(async (req, res, next) => {
     }
     else{
         // Add decoded story
-        block["body"]["star"]["storyDecoded"] = hex_to_ascii(block["body"]["star"]["story"])
+        if(typeof block["body"] != "string")
+            block["body"]["star"]["storyDecoded"] = hex_to_ascii(block["body"]["star"]["story"])
 
         res.json(block);
     }
